@@ -34,11 +34,11 @@
         text-align: center;
     }
     
-      span.password {
+      span.password,text {
         float: left;
         padding-top: 10px;
       }
-      button.btn{
+      .btn-primary{
         display:block;
         margin: 0 auto;
         background-color: #75e392;
