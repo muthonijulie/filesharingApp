@@ -1,43 +1,18 @@
-import React from 'react';
-import Navbar from './Navbar'; // Importing the Navbar component
+import React from 'react'
 
-const Login = () => {
+const Navbar = () => {
   return (
-    <div className="min-h-screen bg-indigo-900 flex flex-col justify-center items-center">
-      <Navbar /> 
-      <div className="bg-teal-400 p-8 rounded-lg shadow-lg w-96">
-        <h1 className="text-center text-white text-2xl font-bold mb-6">LOGIN HERE</h1>
-        <form className="space-y-4">
-          <div>
-            <label htmlFor="username" className="block text-white font-semibold">Username:</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              className="form-input mt-1 block w-full p-2 rounded-lg text-black"
-              placeholder="Enter username"
-            />
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-white font-semibold">Password:</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              className="form-input mt-1 block w-full p-2 rounded-lg text-black"
-              placeholder="Enter password"
-            />
-          </div>
-          <div className="flex justify-between items-center">
-            <a href="#" className="text-sm text-white">Forgot password?</a>
-          </div>
-          <button type="submit" className="bg-green-400 text-white font-semibold py-2 px-4 rounded-lg w-full">
-            Login
-          </button>
-        </form>
-      </div>
+    <div className="bg-indigo-700 w-full p-4">
+    <div className="container mx-auto flex justify-between items-center">
+      <h1 className="text-white font-bold text-lg">MyApp</h1>
+      <ul className="flex space-x-4">
+        <li><a href="/" className="text-white hover:text-gray-300">Home</a></li>
+        <li><a href="/about" className="text-white hover:text-gray-300">About</a></li>
+        <li><a href="/contact" className="text-white hover:text-gray-300">Contact</a></li>
+      </ul>
     </div>
-  );
-};
+  </div>
+  )
+}
 
-export default Login;
+export default Navbar
