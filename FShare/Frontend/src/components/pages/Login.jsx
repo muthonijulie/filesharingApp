@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import Navbar from '../essentials/Navbar';
 import Footer from '../essentials/Footer';
+import email_icon from '../../assets/email.jpeg';
+import password_icon from '../../assets/password.jpeg';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
@@ -32,10 +34,9 @@ const Login = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error('Login failed');
+        throw new Error(data.message || 'Login failed');
       }
 
-      
       setSuccess('Login successful!');
       localStorage.setItem('token', data.token);
       navigate('/Dashboard');
@@ -48,27 +49,44 @@ const Login = () => {
   return (
     <div>
       <Navbar />
-      <div className="flex flex-col items-center justify-center h-screen bg-green-200">
-        <h1 className="text-3xl font-bold mb-4">Login</h1>
-        <form className="w-1/3" onSubmit={handleSubmit}>
-          <input 
-            type="email" 
-            name="email" 
-            placeholder="Email" 
-            className="w-full mb-4 p-2 border rounded" 
-            onChange={handleChange} // Link input change to handleChange
-          />
-          <input 
-            type="password" 
-            name="password" 
-            placeholder="Password" 
-            className="w-full mb-4 p-2 border rounded" 
-            onChange={handleChange} // Link input change to handleChange
-          />
-          <button className="w-full bg-green-700 text-white py-2 rounded">Login</button>
+      <div className="flex flex-col items-center mt-40 bg-white pb-8">
+        <div className="flex flex-col items-center mb-6">
+          <div className="text-4xl font-bold text-indigo-800">Login</div>
+          <div className="w-16 h-1 bg-indigo-800 rounded-md"></div>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div className="flex items-center bg-gray-200 rounded-md p-2">
+            <img src={email_icon} alt="Email" className="mx-4" />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email Id"
+              className="bg-transparent border-none outline-none w-full"
+              onChange={handleChange}
+            />
+          </div>
+          <div className="flex items-center bg-gray-200 rounded-md p-2">
+            <img src={password_icon} alt="Password" className="mx-4" />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              className="bg-transparent border-none outline-none w-full"
+              onChange={handleChange}
+            />
+          </div>
+          {error && <div className="text-red-500">{error}</div>}
+          {success && <div className="text-green-500">{success}</div>}
+          <div className="mt-6 text-gray-600">
+            Lost Password?<span className="text-purple-800 cursor-pointer"> Click Here</span>
+          </div>
+          <button
+            type="submit"
+            className="cursor-pointer text-white rounded-full w-full h-14 bg-indigo-800 flex items-center justify-center font-bold"
+          >
+            Login
+          </button>
         </form>
-        {error && <p className="text-red-500">{error}</p>} {/* Display error message */}
-        {success && <p className="text-green-500">{success}</p>} {/* Display success message */}
       </div>
       <Footer />
     </div>
