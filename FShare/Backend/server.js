@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
 const User = require('./models/User');
 const { JWT_secret } = require ('./genereteSecret');
 
@@ -10,6 +11,14 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
+
+//Cors Configuration
+const corsOptions = {
+    origin: 'https://127.0.0.1:3000',
+    optionsSuccessStatus: 200,
+}
+
+app.use(cors(corsOptions));
 
 // Connect to MongoDB
 mongoose.connect('mongodb://127.0.0.1:27017/AuthDB', { useNewUrlParser: true, useUnifiedTopology: true })
