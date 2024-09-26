@@ -49,7 +49,7 @@ const Login = () => {
   return (
     <div>
       <Navbar />
-      <div className="flex flex-col items-center mt-40 bg-white pb-8">
+      <div className="flex flex-col items-center mt-40 mb-40 bg-white pb-8">
         <div className="flex flex-col items-center mb-6">
           <div className="text-4xl font-bold text-indigo-800">Login</div>
           <div className="w-16 h-1 bg-indigo-800 rounded-md"></div>
