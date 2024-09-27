@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'; // Import useRef and useState
+import React, { useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 import Sidebar from '../essentials/Sidebar';
@@ -9,6 +9,7 @@ import axios from 'axios';
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]); // State for selected files
+  const [cancelledFiles, setCancelledFiles] = useState([]); // State for cancelled files
   const fileInputRef = useRef(null); // Create a ref for the file input
 
   const toggleSidebar = () => {
@@ -17,6 +18,7 @@ const Dashboard = () => {
 
   const handleFileChange = (e) => {
     setSelectedFiles(Array.from(e.target.files)); // Store selected files in state
+    setCancelledFiles([]); // Reset cancelled files when new files are selected
   };
 
   const handleFileUpload = async () => {
@@ -44,6 +46,16 @@ const Dashboard = () => {
 
   const openFilePicker = () => {
     fileInputRef.current.click(); // Programmatically click the hidden file input
+  };
+
+  const cancelFile = (file) => {
+    setCancelledFiles((prev) => [...prev, file]); // Add file to cancelled files
+    setSelectedFiles((prev) => prev.filter((f) => f !== file)); // Remove file from selected files
+  };
+
+  const cancelAllFiles = () => {
+    setCancelledFiles((prev) => [...prev, ...selectedFiles]); // Add all selected files to cancelled files
+    setSelectedFiles([]); // Clear selected files
   };
 
   return (
@@ -90,13 +102,37 @@ const Dashboard = () => {
                   <h3 className="text-lg">Selected Files:</h3>
                   <ul className="list-disc list-inside">
                     {selectedFiles.map((file, index) => (
-                      <li key={index} className="text-black">
-                        {file.name}
+                      <li key={index} className="flex items-center text-black">
+                        <input
+                          type="checkbox"
+                          checked={cancelledFiles.includes(file)} // Check if the file is in cancelledFiles
+                          onChange={() => {
+                            if (cancelledFiles.includes(file)) {
+                              setCancelledFiles((prev) => prev.filter((f) => f !== file)); // Uncheck
+                            } else {
+                              cancelFile(file); // Cancel the file
+                            }
+                          }}
+                        />
+                        <span className="ml-2">{file.name}</span>
+                        <button
+                          onClick={() => cancelFile(file)} // Cancel button for individual file
+                          className="ml-4 text-red-500 hover:text-red-700"
+                        >
+                          Cancel
+                        </button>
                       </li>
                     ))}
                   </ul>
                 </div>
               )}
+
+              <button
+                onClick={cancelAllFiles} // Cancel all files
+                className="mt-3 bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
+              >
+                Cancel All Files
+              </button>
 
               <button
                 onClick={handleFileUpload}
