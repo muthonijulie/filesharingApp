@@ -2,7 +2,7 @@ import React from 'react';
 
 const Footer = () => {
   return (
-    <footer className="text-center p-4 bg-indigo-800 text-white">
+    <footer className="text-center p-4 bg-indigo-800 text-white mb-0">
       <p>© 2024 FShare - All Rights Reserved</p>
       <div className="space-x-4">
         <a href="#">Privacy Policy</a>
