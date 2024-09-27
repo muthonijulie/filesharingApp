@@ -48,9 +48,10 @@ const Login = () => {
 
   return (
     <div>
-      <Navbar />
-      <div className="flex flex-col items-center mt-40 mb-40 bg-white pb-8">
-        <div className="flex flex-col items-center mb-6">
+      <Navbar/>
+        <div className='h-[90%] h-full py-16'> 
+      <div className="flex flex-col items-center  bg-white ">
+        <div className="flex flex-col items-center mb-6 pt-10">
           <div className="text-4xl font-bold text-indigo-800">Login</div>
           <div className="w-16 h-1 bg-indigo-800 rounded-md"></div>
         </div>
@@ -88,8 +89,11 @@ const Login = () => {
           </button>
         </form>
       </div>
-      <Footer />
+    
+      </div>
+        <Footer />
     </div>
+  
   );
 };
 
