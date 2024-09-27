@@ -23,6 +23,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { name, email, password, confirmPassword } = formData;
+    console.log(formData)
 
     // Validate that the password and confirm password match
     if (password !== confirmPassword) {

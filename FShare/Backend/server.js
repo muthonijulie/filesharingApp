@@ -1,68 +1,63 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
-const User = require('./models/User');
-const { JWT_secret } = require('./generateSecret');
 const multer = require('multer');
-const GridFsStorage = require('multer-gridfs-storage');
-const Grid = require('gridfs-stream');
+const path = require('path');
+const fs = require('fs');
+const { JWT_secret } = require('./generateSecret');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
+app.use(cors({ origin: '*', optionsSuccessStatus: 200 }));
 
-// CORS Configuration
-const corsOptions = {
-    origin: 'https://127.0.0.1:3000',
-    optionsSuccessStatus: 200,
-};
-
-app.use(cors(corsOptions));
-
-// Connect to MongoDB
-mongoose.connect('mongodb://127.0.0.1:27017/AuthDB', { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.log(err));
-
-// Initialize GridFS
-let gfs;
-const conn = mongoose.createConnection('mongodb://127.0.0.1:27017/AuthDB', { useNewUrlParser: true, useUnifiedTopology: true });
-conn.once('open', () => {
-    gfs = Grid(conn.db, mongoose.mongo);
-    gfs.collection('uploads'); // Set the collection name
+// MySQL Database connection
+const pool = mysql.createPool({
+    host: 'localhost',
+    user: 'root',
+    password: '', // Leave empty if no password
+    database: 'AuthDB',
+    waitForConnections: true,
+    connectionLimit: 10,
 });
 
-// Multer storage configuration for GridFS
-const storage = new GridFsStorage({
-    url: 'mongodb://127.0.0.1:27017/AuthDB',
-    file: (req, file) => {
-        return {
-            filename: file.originalname,
-            bucketName: 'uploads', // Set the bucket name
-        };
+// File upload configuration using Multer
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/');
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname)); // Unique file name
     },
 });
+
 const upload = multer({ storage });
+
+// Ensure 'uploads' directory exists
+if (!fs.existsSync('uploads')) {
+    fs.mkdirSync('uploads');
+}
 
 // Signup route
 app.post('/api/signup', async (req, res) => {
-    const { username, email, password } = req.body;
+    const { name, email, password } = req.body;
 
-    // Check if user exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-        return res.status(400).send('User already exists');
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = new User({ username, email, password: hashedPassword });
     try {
-        await user.save();
+        // Check if user exists
+        const [existingUser] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+        if (existingUser.length > 0) {
+            return res.status(400).send('User already exists');
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Insert user into MySQL database
+        await pool.query('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, hashedPassword]);
         res.status(201).send('User created');
     } catch (err) {
         res.status(400).send('Error creating user: ' + err.message);
@@ -72,40 +67,62 @@ app.post('/api/signup', async (req, res) => {
 // Login route
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
 
-    if (!user) {
-        return res.status(400).send('User not found');
+    try {
+        // Check if user exists
+        const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+        const user = rows[0];
+
+        if (!user) {
+            return res.status(400).send('User not found');
+        }
+
+        // Compare the password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).send('Invalid credentials');
+        }
+
+        // Generate JWT
+        const token = jwt.sign({ id: user.id }, JWT_secret);
+        res.json({ token });
+    } catch (err) {
+        res.status(400).send('Error logging in: ' + err.message);
     }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-        return res.status(400).send('Invalid credentials');
-    }
-
-    const token = jwt.sign({ id: user._id }, JWT_secret); // Use a strong secret in production
-    res.json({ token });
 });
 
 // File upload route
-app.post('/api/upload', upload.single('file'), (req, res) => {
-    res.json({ file: req.file });
+app.post('/api/upload', upload.single('file'), async (req, res) => {
+    try {
+        // Save file metadata in MySQL
+        const fileName = req.file.filename;
+        const filePath = req.file.path;
+
+        await pool.query('INSERT INTO uploads (filename, filepath) VALUES (?, ?)', [fileName, filePath]);
+
+        res.json({ file: req.file });
+    } catch (err) {
+        res.status(500).send('File upload failed: ' + err.message);
+    }
 });
 
 // Retrieve files route
-app.get('/api/files/:filename', (req, res) => {
-    gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
-        if (!file || file.length === 0) {
+app.get('/api/files/:filename', async (req, res) => {
+    try {
+        const [fileData] = await pool.query('SELECT * FROM uploads WHERE filename = ?', [req.params.filename]);
+
+        if (fileData.length === 0) {
             return res.status(404).json({ err: 'No file exists' });
         }
 
-        const readStream = gfs.createReadStream(file.filename);
-        readStream.pipe(res);
-    });
+        const file = fileData[0];
+        res.sendFile(path.resolve(file.filepath));
+    } catch (err) {
+        res.status(500).send('Error retrieving file: ' + err.message);
+    }
 });
 
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
-nom
