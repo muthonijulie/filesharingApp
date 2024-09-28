@@ -127,19 +127,24 @@ const Dashboard = () => {
                 </div>
               )}
 
-              <button
-                onClick={cancelAllFiles} // Cancel all files
-                className="mt-3 bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
-              >
-                Cancel All Files
-              </button>
+              {/* Show these buttons only if files have been selected */}
+              {selectedFiles.length > 0 && (
+                <>
+                  <button
+                    onClick={cancelAllFiles} // Cancel all files
+                    className="mt-3 bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
+                  >
+                    Cancel All Files
+                  </button>
 
-              <button
-                onClick={handleFileUpload}
-                className="mt-3 bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
-              >
-                Upload Files
-              </button>
+                  <button
+                    onClick={handleFileUpload}
+                    className="mt-3 bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+                  >
+                    Upload Files
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
